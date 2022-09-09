@@ -1,0 +1,119 @@
+---
+title: "plateau_biomosa"
+output: html_document
+date: "2022-09-03"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(nlme)
+```
+
+```{r}
+library(ggthemes)
+```
+
+packages associated with model ajust
+```{r}
+library(nlraa)     # for self-starting models
+library(minpack.lm)# for nls with Levenberg-Marquardt algorithm
+library(nlstools)  # for residual plots
+library(modelr)    # for the r-squared and rmse
+library(devtools)  # for sourcing the lin_plateau() function in Method 3
+```
+
+```{r}
+library(readxl)
+Data_NRC <- read_excel("data_sets/data_wheat_NRC/Data_NRC.xlsx", 
+    sheet = "tabla_R")
+```
+
+
+filter 2006
+```{r}
+dat_2006<-Data_NRC %>% filter(experiment %in% c(2006))
+dat_2006
+View(dat_2006)
+```
+
+ajuste modelo Todos los sitos
+```{r}
+fit_2006<-dat_2006 %>% nlsLM(formula = GY_rel ~ SSlinp(biom, a, b, jp))
+summary(fit_2006)
+```
+
+plot 2006
+```{r}
+a<-coef(fit_2006)[1]
+b<-coef(fit_2006)[2]
+jp<-coef(fit_2006)[3]
+
+
+dat_2006 %>% mutate_at(vars(sitio),as.factor)%>% 
+    ggplot(aes(x=Treatment_S,y=biom,color=sitio))+
+    geom_point(size=2)+
+    geom_line(stat="smooth",
+            method = "nlsLM",
+            formula = y ~ SSlinp(x, a, b, jp),
+            se = FALSE,
+            color = "#CC0000")+
+    coord_cartesian(ylim = c(0, 10))+
+    theme_classic()
+```
+
+filter 2008
+```{r}
+Data_NRC <- read_excel("data_sets/data_wheat_NRC/Data_NRC.xlsx", 
+    sheet = "tabla_R")
+dat_2008<-Data_NRC %>% filter(experiment %in% c(2008))
+dat_2008
+```
+
+ajuste modelo Todos los sitos
+```{r}
+fit_2008<-dat_2008 %>% nlsLM(formula = GY_rel ~ SSlinp(biom, a, b, jp))
+summary(fit_2008)
+```
+
+plot 2008
+```{r}
+a<-coef(fit_2008)[1]
+b<-coef(fit_2008)[2]
+jp<-coef(fit_2008)[3]
+
+
+dat_2008 %>% mutate_at(vars(sitio),as.factor)%>% 
+    ggplot(aes(x=Treatment_S,y=biom,color=sitio))+
+    geom_point(size=2)+
+    geom_line(aes(color=Treatment))+
+    geom_line(stat="smooth",
+            method = "nlsLM",
+            formula = y ~ SSlinp(x, a, b, jp),
+            se = FALSE,
+            color = "#CC0000")+
+    coord_cartesian(ylim = c(0, 10))+
+    theme_classic()
+```
+
+ploteo cada sitio x separado
+```{r}
+dat_2008 %>% filter(sitio %in% c(5)) %>%
+    ggplot(aes(x=Treatment_S,y=biom))+
+    geom_point(size=2)+
+    geom_line(aes(color=N_trt))+
+    coord_cartesian(ylim = c(0, 10))+
+    theme_classic()
+```
+
+```{r}
+dat_2008 %>% filter(sitio %in% c(6)) %>%
+    ggplot(aes(x=Treatment_S,y=biom))+
+    geom_point(size=2)+
+    geom_line(aes(color=N_trt))+
+    coord_cartesian(ylim = c(0, 10))+
+    theme_classic()
+```
